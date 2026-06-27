@@ -1,0 +1,158 @@
+import { ConversionResult } from "./converter";
+import { nbt, writeNbt, gzip, NbtTag } from "./nbt";
+
+// Minecraft 1.20.1 data version — widely compatible with current WorldEdit & Litematica.
+const DATA_VERSION = 3465;
+
+/**
+ * Pixel art is exported as an upright single-layer wall:
+ *   X = image column (width), Y = image row flipped (so it stands upright), Z = 1 thick.
+ * Returns palette + per-block index in the iteration order each format expects.
+ */
+function buildGrid(result: ConversionResult) {
+  const { pixels, width, height } = result;
+  const paletteIndex = new Map<string, number>();
+  const paletteIds: string[] = [];
+
+  // Index ordering: x + z*W + y*W*L, with y flipped (bottom row of wall = last image row)
+  const indices = new Array<number>(width * height);
+  for (let row = 0; row < height; row++) {
+    const y = height - 1 - row; // flip so image top is wall top
+    for (let x = 0; x < width; x++) {
+      const id = pixels[row][x].block.id;
+      let idx = paletteIndex.get(id);
+      if (idx === undefined) {
+        idx = paletteIds.length;
+        paletteIndex.set(id, idx);
+        paletteIds.push(id);
+      }
+      indices[x + 0 * width + y * width * 1] = idx;
+    }
+  }
+
+  return { width, height, length: 1, paletteIds, indices };
+}
+
+function triggerDownload(bytes: Uint8Array, filename: string) {
+  const blob = new Blob([bytes as unknown as BlobPart], { type: "application/octet-stream" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/* ─────────────── Sponge .schem (WorldEdit) ─────────────── */
+
+function writeVarInt(out: number[], value: number) {
+  let v = value >>> 0;
+  while (true) {
+    if ((v & ~0x7f) === 0) { out.push(v); return; }
+    out.push((v & 0x7f) | 0x80);
+    v >>>= 7;
+  }
+}
+
+export async function downloadSchem(result: ConversionResult, name = "pixel-art") {
+  const { width, height, length, paletteIds, indices } = buildGrid(result);
+
+  const paletteTag: Record<string, NbtTag> = {};
+  paletteIds.forEach((id, i) => {
+    paletteTag[`minecraft:${id}`] = nbt.int(i);
+  });
+
+  const blockData: number[] = [];
+  for (const idx of indices) writeVarInt(blockData, idx);
+
+  const root = nbt.compound({
+    Version: nbt.int(2),
+    DataVersion: nbt.int(DATA_VERSION),
+    Width: nbt.short(width),
+    Height: nbt.short(height),
+    Length: nbt.short(length),
+    PaletteMax: nbt.int(paletteIds.length),
+    Palette: nbt.compound(paletteTag),
+    BlockData: nbt.byteArray(Uint8Array.from(blockData)),
+    Offset: nbt.intArray([0, 0, 0]),
+    Metadata: nbt.compound({
+      Name: nbt.string(name),
+      Author: nbt.string("Minecraft Pixel Art Generator"),
+    }),
+  });
+
+  const bytes = await gzip(writeNbt("Schematic", root));
+  triggerDownload(bytes, `${name}.schem`);
+}
+
+/* ─────────────── Litematica .litematic ─────────────── */
+
+function packBitArray(indices: number[], bits: number): bigint[] {
+  const mask = (1n << BigInt(bits)) - 1n;
+  const max64 = (1n << 64n) - 1n;
+  const longCount = Math.ceil((indices.length * bits) / 64);
+  const longs = new Array<bigint>(longCount).fill(0n);
+
+  for (let i = 0; i < indices.length; i++) {
+    const val = BigInt(indices[i]) & mask;
+    const bitIndex = i * bits;
+    const startLong = Math.floor(bitIndex / 64);
+    const startOffset = bitIndex % 64;
+    const endLong = Math.floor((bitIndex + bits - 1) / 64);
+
+    longs[startLong] = (longs[startLong] | (val << BigInt(startOffset))) & max64;
+    if (startLong !== endLong) {
+      longs[endLong] = (longs[endLong] | (val >> BigInt(64 - startOffset))) & max64;
+    }
+  }
+  return longs;
+}
+
+export async function downloadLitematic(result: ConversionResult, name = "pixel-art") {
+  const { width, height, length, paletteIds, indices } = buildGrid(result);
+
+  // Litematica needs air at palette index 0; rebuild palette + indices with the shift.
+  const palette = ["air", ...paletteIds];
+  const shifted = indices.map((i) => i + 1);
+
+  const bits = Math.max(2, Math.ceil(Math.log2(palette.length)));
+  const longs = packBitArray(shifted, bits);
+
+  const paletteList = palette.map((id) =>
+    nbt.compound({ Name: nbt.string(`minecraft:${id}`) })
+  );
+
+  const total = width * height * length;
+  const now = BigInt(Date.now());
+
+  const region = nbt.compound({
+    Position: nbt.compound({ x: nbt.int(0), y: nbt.int(0), z: nbt.int(0) }),
+    Size: nbt.compound({ x: nbt.int(width), y: nbt.int(height), z: nbt.int(length) }),
+    BlockStatePalette: nbt.list(nbt.typeId("compound"), paletteList),
+    BlockStates: nbt.longArray(longs),
+    TileEntities: nbt.list(nbt.typeId("compound"), []),
+    Entities: nbt.list(nbt.typeId("compound"), []),
+    PendingBlockTicks: nbt.list(nbt.typeId("compound"), []),
+    PendingFluidTicks: nbt.list(nbt.typeId("compound"), []),
+  });
+
+  const root = nbt.compound({
+    MinecraftDataVersion: nbt.int(DATA_VERSION),
+    Version: nbt.int(6),
+    Metadata: nbt.compound({
+      Name: nbt.string(name),
+      Author: nbt.string("Minecraft Pixel Art Generator"),
+      Description: nbt.string("Generated pixel art"),
+      EnclosingSize: nbt.compound({ x: nbt.int(width), y: nbt.int(height), z: nbt.int(length) }),
+      TimeCreated: nbt.long(now),
+      TimeModified: nbt.long(now),
+      TotalBlocks: nbt.int(total),
+      TotalVolume: nbt.int(total),
+      RegionCount: nbt.int(1),
+    }),
+    Regions: nbt.compound({ [name]: region }),
+  });
+
+  const bytes = await gzip(writeNbt("", root));
+  triggerDownload(bytes, `${name}.litematic`);
+}
