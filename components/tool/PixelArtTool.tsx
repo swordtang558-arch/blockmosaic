@@ -9,6 +9,7 @@ import BlockPicker from "./BlockPicker";
 import { ConversionResult, DitherMethod } from "@/lib/converter";
 import { Orientation } from "@/lib/schematic";
 import { runConvert } from "@/lib/runConvert";
+import { autoPaletteFromImage } from "@/lib/autoPalette";
 import { BLOCKS, MAP_COLORS, DEFAULT_SELECTED_IDS, isSurvivalBlock, MinecraftBlock } from "@/lib/blocks";
 
 const SIZES = [32, 64, 128];
@@ -195,7 +196,15 @@ export default function PixelArtTool({ mapMode = false, defaultWidth }: Props) {
               <div className="flex items-center justify-between mb-1.5">
                 <label className="text-xs text-[var(--color-muted)]">Blocks ({palette.length} active)</label>
                 <div className="flex gap-2 text-xs">
-                  <button onClick={() => setSelected(new Set(BLOCKS.map((b) => b.id)))} className="text-[var(--color-accent-dark)] hover:underline">Select all</button>
+                  <button
+                    onClick={() => imageData && setSelected(new Set(autoPaletteFromImage(imageData)))}
+                    disabled={!imageData}
+                    className="text-[var(--color-accent-dark)] font-medium hover:underline disabled:opacity-40 disabled:no-underline"
+                    title="Pick the blocks that best match your uploaded image"
+                  >
+                    ✨ Auto-pick
+                  </button>
+                  <button onClick={() => setSelected(new Set(BLOCKS.map((b) => b.id)))} className="text-[var(--color-accent-dark)] hover:underline">All</button>
                   <button onClick={() => setSelected(new Set())} className="text-[var(--color-muted)] hover:underline">Clear</button>
                 </div>
               </div>
@@ -234,7 +243,7 @@ export default function PixelArtTool({ mapMode = false, defaultWidth }: Props) {
       <div className="space-y-5">
         {result ? (
           <>
-            <PixelCanvas result={result} showGrid={showGrid} />
+            <PixelCanvas result={result} showGrid={showGrid} brushBlocks={palette} onResultChange={setResult} />
             <ExportPanel result={result} orientation={orientation} />
             <MaterialList result={result} />
           </>
