@@ -2,16 +2,17 @@
 
 import { useState } from "react";
 import { ConversionResult } from "@/lib/converter";
-import { downloadSchem, downloadLitematic } from "@/lib/schematic";
+import { downloadSchem, downloadLitematic, downloadMcfunction } from "@/lib/schematic";
 
 export default function ExportPanel({ result }: { result: ConversionResult }) {
   const [busy, setBusy] = useState<string | null>(null);
 
-  async function run(fmt: "litematic" | "schem") {
+  async function run(fmt: "litematic" | "schem" | "mcfunction") {
     setBusy(fmt);
     try {
       if (fmt === "litematic") await downloadLitematic(result, "pixel-art");
-      else await downloadSchem(result, "pixel-art");
+      else if (fmt === "schem") await downloadSchem(result, "pixel-art");
+      else downloadMcfunction(result, "pixel-art");
     } finally {
       setBusy(null);
     }
@@ -31,6 +32,10 @@ export default function ExportPanel({ result }: { result: ConversionResult }) {
         <button onClick={() => run("schem")} disabled={busy !== null} className="btn btn-ghost flex-1 flex-col !items-start py-2.5">
           <span className="text-sm font-semibold">{busy === "schem" ? "Building…" : "↓ .schem"}</span>
           <span className="text-xs text-[var(--color-muted)] font-normal">WorldEdit</span>
+        </button>
+        <button onClick={() => run("mcfunction")} disabled={busy !== null} className="btn btn-ghost flex-1 flex-col !items-start py-2.5">
+          <span className="text-sm font-semibold">{busy === "mcfunction" ? "Building…" : "↓ .mcfunction"}</span>
+          <span className="text-xs text-[var(--color-muted)] font-normal">Datapack / command</span>
         </button>
       </div>
     </div>

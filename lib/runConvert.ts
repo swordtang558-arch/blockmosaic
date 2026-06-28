@@ -1,12 +1,12 @@
-import { convertImage, ConversionResult } from "./converter";
-import type { PaletteKey } from "./blocks";
+import { convertImage, ConversionResult, DitherMethod } from "./converter";
+import type { MinecraftBlock } from "./blocks";
 
 export interface ConvertParams {
   imageData: ImageData;
   outputWidth: number;
-  paletteKey: PaletteKey;
-  survivalOnly: boolean;
+  palette: MinecraftBlock[];
   staircase: boolean;
+  dither: DitherMethod;
 }
 
 /**
@@ -15,6 +15,12 @@ export interface ConvertParams {
  * this runs, so the heavy logic stays out of the initial page bundle.
  */
 export function runConvert(params: ConvertParams): Promise<ConversionResult> {
+  const local = () =>
+    convertImage(params.imageData, params.outputWidth, params.palette, {
+      staircase: params.staircase,
+      dither: params.dither,
+    });
+
   if (typeof Worker !== "undefined") {
     return new Promise((resolve, reject) => {
       const worker = new Worker(new URL("./worker/convert.worker.ts", import.meta.url));
@@ -24,14 +30,8 @@ export function runConvert(params: ConvertParams): Promise<ConversionResult> {
       };
       worker.onerror = (err) => {
         worker.terminate();
-        // Fall back to main-thread conversion on worker failure.
         try {
-          resolve(
-            convertImage(params.imageData, params.outputWidth, params.paletteKey, {
-              survivalOnly: params.survivalOnly,
-              staircase: params.staircase,
-            })
-          );
+          resolve(local());
         } catch {
           reject(err);
         }
@@ -40,9 +40,5 @@ export function runConvert(params: ConvertParams): Promise<ConversionResult> {
     });
   }
 
-  return Promise.resolve(
-    convertImage(params.imageData, params.outputWidth, params.paletteKey, {
-      survivalOnly: params.survivalOnly,
-    })
-  );
+  return Promise.resolve(local());
 }
