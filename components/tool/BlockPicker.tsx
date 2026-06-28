@@ -64,7 +64,12 @@ export default function BlockPicker({ selected, isDisabled, onToggle, onSetCateg
                           ? "ring-2 ring-[var(--color-accent)] ring-offset-1"
                           : "ring-1 ring-black/10 opacity-55 hover:opacity-100"
                     }`}
-                    style={{ backgroundColor: `rgb(${b.r},${b.g},${b.b})` }}
+                    style={{
+                      backgroundColor: `rgb(${b.r},${b.g},${b.b})`,
+                      backgroundImage: `url(/textures/${b.id}.png)`,
+                      backgroundSize: "cover",
+                      imageRendering: "pixelated",
+                    }}
                   />
                 );
               })}

@@ -2,17 +2,17 @@
 
 import { useState } from "react";
 import { ConversionResult } from "@/lib/converter";
-import { downloadSchem, downloadLitematic, downloadMcfunction } from "@/lib/schematic";
+import { downloadSchem, downloadLitematic, downloadMcfunction, Orientation } from "@/lib/schematic";
 
-export default function ExportPanel({ result }: { result: ConversionResult }) {
+export default function ExportPanel({ result, orientation = "wall" }: { result: ConversionResult; orientation?: Orientation }) {
   const [busy, setBusy] = useState<string | null>(null);
 
   async function run(fmt: "litematic" | "schem" | "mcfunction") {
     setBusy(fmt);
     try {
-      if (fmt === "litematic") await downloadLitematic(result, "pixel-art");
-      else if (fmt === "schem") await downloadSchem(result, "pixel-art");
-      else downloadMcfunction(result, "pixel-art");
+      if (fmt === "litematic") await downloadLitematic(result, "pixel-art", orientation);
+      else if (fmt === "schem") await downloadSchem(result, "pixel-art", orientation);
+      else downloadMcfunction(result, "pixel-art", orientation);
     } finally {
       setBusy(null);
     }

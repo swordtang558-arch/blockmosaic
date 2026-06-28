@@ -7,6 +7,7 @@ import MaterialList from "./MaterialList";
 import ExportPanel from "./ExportPanel";
 import BlockPicker from "./BlockPicker";
 import { ConversionResult, DitherMethod } from "@/lib/converter";
+import { Orientation } from "@/lib/schematic";
 import { runConvert } from "@/lib/runConvert";
 import { BLOCKS, MAP_COLORS, DEFAULT_SELECTED_IDS, isSurvivalBlock, MinecraftBlock } from "@/lib/blocks";
 
@@ -33,6 +34,7 @@ export default function PixelArtTool({ mapMode = false, defaultWidth }: Props) {
   const [width, setWidth] = useState(defaultWidth ?? (mapMode ? 128 : 64));
   const [dither, setDither] = useState<DitherMethod>("none");
   const [staircase, setStaircase] = useState(false);
+  const [orientation, setOrientation] = useState<Orientation>(mapMode ? "floor" : "wall");
   const [showGrid, setShowGrid] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -174,6 +176,19 @@ export default function PixelArtTool({ mapMode = false, defaultWidth }: Props) {
             </div>
           )}
 
+          {/* Build orientation — affects exported schematic/mcfunction coordinates */}
+          <div>
+            <label className="text-xs text-[var(--color-muted)] block mb-1.5">Build orientation (export)</label>
+            <select
+              value={orientation}
+              onChange={(e) => setOrientation(e.target.value as Orientation)}
+              className="w-full py-2 px-3 rounded-lg text-sm border border-[var(--color-line)] bg-white"
+            >
+              <option value="wall">Vertical wall (mural)</option>
+              <option value="floor">Flat on ground (map art)</option>
+            </select>
+          </div>
+
           {/* Block palette picker (hidden in map mode) */}
           {!mapMode && (
             <div>
@@ -220,7 +235,7 @@ export default function PixelArtTool({ mapMode = false, defaultWidth }: Props) {
         {result ? (
           <>
             <PixelCanvas result={result} showGrid={showGrid} />
-            <ExportPanel result={result} />
+            <ExportPanel result={result} orientation={orientation} />
             <MaterialList result={result} />
           </>
         ) : (
