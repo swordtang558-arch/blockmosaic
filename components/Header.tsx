@@ -6,11 +6,11 @@ import Logo from "./Logo";
 import { SITE_NAME } from "@/lib/seo";
 
 const NAV = [
-  { href: "/image-converter/", label: "Image Converter" },
-  { href: "/pixel-art-generator/", label: "Generator" },
+  { href: "/image-to-pixel-art/", label: "Pixel Art" },
+  { href: "/pixel-art-generator/", label: "Minecraft" },
+  { href: "/image-to-schematic/", label: "Schematic" },
   { href: "/block-list/", label: "Block List" },
   { href: "/map-art/", label: "Map Art" },
-  { href: "/templates/", label: "Templates" },
   { href: "/blog/", label: "Blog" },
 ];
 

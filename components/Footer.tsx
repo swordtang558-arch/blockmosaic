@@ -4,11 +4,21 @@ import { SITE_NAME } from "@/lib/seo";
 
 const COLS: { title: string; links: { href: string; label: string }[] }[] = [
   {
-    title: "Tools",
+    title: "Pixel Art Tools",
     links: [
-      { href: "/image-converter/", label: "Image Converter" },
+      { href: "/image-to-pixel-art/", label: "Image to Pixel Art" },
+      { href: "/pixel-art-converter/", label: "Pixel Art Converter" },
+      { href: "/png-to-pixel-art/", label: "PNG to Pixel Art" },
+    ],
+  },
+  {
+    title: "Minecraft Tools",
+    links: [
       { href: "/pixel-art-generator/", label: "Pixel Art Generator" },
+      { href: "/image-converter/", label: "Image Converter" },
       { href: "/block-list/", label: "Block Shopping List" },
+      { href: "/image-to-schematic/", label: "Image to Schematic" },
+      { href: "/litematica-to-schematic/", label: "Litematica to Schematic" },
       { href: "/map-art/", label: "Map Art Generator" },
     ],
   },
@@ -34,7 +44,7 @@ export default function Footer() {
   return (
     <footer className="mt-20 border-t border-[var(--color-line)] bg-[var(--color-surface-alt)]">
       <div className="container-page py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2 font-bold">
               <Logo size={24} />

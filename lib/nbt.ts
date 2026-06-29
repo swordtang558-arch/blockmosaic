@@ -136,3 +136,13 @@ export async function gzip(data: Uint8Array): Promise<Uint8Array> {
   const ab = await new Response(cs.readable).arrayBuffer();
   return new Uint8Array(ab);
 }
+
+/** Gzip-decompress bytes using the browser's built-in DecompressionStream. */
+export async function gunzip(data: Uint8Array): Promise<Uint8Array> {
+  const ds = new DecompressionStream("gzip");
+  const writer = ds.writable.getWriter();
+  writer.write(data as unknown as Uint8Array<ArrayBuffer>);
+  writer.close();
+  const ab = await new Response(ds.readable).arrayBuffer();
+  return new Uint8Array(ab);
+}

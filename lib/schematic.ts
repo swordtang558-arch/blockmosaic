@@ -84,13 +84,18 @@ function writeVarInt(out: number[], value: number) {
   }
 }
 
-export async function downloadSchem(result: ConversionResult, name = "pixel-art", orientation: Orientation = "wall") {
-  const { dimX, dimY, dimZ, paletteIds, indices } = buildGrid(result, orientation);
-
+/**
+ * Low-level Sponge .schem builder. `paletteKeys` are full block ids (with
+ * optional state, e.g. "minecraft:oak_log[axis=y]"); `indices` is one palette
+ * index per block in x + z*Width + y*Width*Length order. Reused by the image
+ * generator and the litematic→schem converter.
+ */
+export async function schemBytes(
+  dimX: number, dimY: number, dimZ: number,
+  paletteKeys: string[], indices: number[], name = "pixel-art"
+): Promise<Uint8Array> {
   const paletteTag: Record<string, NbtTag> = {};
-  paletteIds.forEach((id, i) => {
-    paletteTag[`minecraft:${id}`] = nbt.int(i);
-  });
+  paletteKeys.forEach((key, i) => { paletteTag[key] = nbt.int(i); });
 
   const blockData: number[] = [];
   for (const idx of indices) writeVarInt(blockData, idx);
@@ -101,18 +106,19 @@ export async function downloadSchem(result: ConversionResult, name = "pixel-art"
     Width: nbt.short(dimX),
     Height: nbt.short(dimY),
     Length: nbt.short(dimZ),
-    PaletteMax: nbt.int(paletteIds.length),
+    PaletteMax: nbt.int(paletteKeys.length),
     Palette: nbt.compound(paletteTag),
     BlockData: nbt.byteArray(Uint8Array.from(blockData)),
     Offset: nbt.intArray([0, 0, 0]),
-    Metadata: nbt.compound({
-      Name: nbt.string(name),
-      Author: nbt.string("Minecraft Pixel Art Generator"),
-    }),
+    Metadata: nbt.compound({ Name: nbt.string(name), Author: nbt.string("mcimagetool.com") }),
   });
+  return gzip(writeNbt("Schematic", root));
+}
 
-  const bytes = await gzip(writeNbt("Schematic", root));
-  triggerDownload(bytes, `${name}.schem`);
+export async function downloadSchem(result: ConversionResult, name = "pixel-art", orientation: Orientation = "wall") {
+  const { dimX, dimY, dimZ, paletteIds, indices } = buildGrid(result, orientation);
+  const keys = paletteIds.map((id) => `minecraft:${id}`);
+  triggerDownload(await schemBytes(dimX, dimY, dimZ, keys, indices, name), `${name}.schem`);
 }
 
 /* ─────────────── Litematica .litematic ─────────────── */

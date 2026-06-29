@@ -23,6 +23,107 @@ export interface BlogPost {
 
 export const POSTS: BlogPost[] = [
   {
+    slug: "minecraft-concrete-colors",
+    title: "All 16 Minecraft Concrete Colors (with RGB)",
+    description:
+      "The full list of all 16 Minecraft concrete colors with their RGB values, plus why concrete is the best block for pixel art and how to make it.",
+    h1: "Minecraft Concrete Colors",
+    date: "2026-06-29",
+    excerpt: "Every concrete color, its RGB value, and why concrete is the go-to block for vibrant pixel art.",
+    keyword: "minecraft concrete",
+    sections: [
+      {
+        h2: "Why concrete is the best pixel-art block",
+        body: [
+          "Concrete comes in all 16 dye colors, each a flat, vivid, evenly-lit surface with no texture noise. That makes it the most popular block for Minecraft pixel art — colors read cleanly from a distance and the palette covers a wide gamut.",
+        ],
+      },
+      {
+        h2: "The 16 concrete colors",
+        body: ["Here are the 16 concrete colors. Use these as your core palette when converting an image to blocks."],
+        list: [
+          "White, Light Gray, Gray, Black",
+          "Red, Orange, Yellow, Lime, Green",
+          "Cyan, Light Blue, Blue, Purple, Magenta, Pink, Brown",
+        ],
+      },
+      {
+        h2: "How to make concrete",
+        body: [
+          "Combine 4 sand, 4 gravel and 1 matching dye to craft 8 concrete powder, then place it next to water to harden it into concrete. For survival pixel art, a concrete duper or a bulk dye supply makes large builds practical.",
+        ],
+      },
+    ],
+    related: ["/pixel-art-generator/", "minecraft-block-palettes", "/block-list/"],
+  },
+  {
+    slug: "minecraft-block-palettes",
+    title: "Best Minecraft Block Palettes for Pixel Art",
+    description:
+      "A guide to Minecraft block palettes for pixel art and builds: concrete, wool, terracotta, glazed, and map-color palettes — when to use each.",
+    h1: "Minecraft Block Palettes for Pixel Art",
+    date: "2026-06-29",
+    excerpt: "Concrete, wool, terracotta, glazed and map-color palettes — which to pick for vibrant, muted, or map-accurate builds.",
+    keyword: "minecraft block palettes",
+    sections: [
+      {
+        h2: "What is a block palette?",
+        body: [
+          "A block palette is the set of blocks you allow when building pixel art. The palette decides the colors available to match your image — a wider, more vivid palette captures detail; a tighter palette gives a cohesive, stylized look.",
+        ],
+      },
+      {
+        h2: "Common palettes and when to use them",
+        body: ["Each block family has a different feel:"],
+        list: [
+          "Concrete — 16 vibrant flat colors; the all-round best for pixel art",
+          "Wool — similar range, slightly softer; flammable in survival",
+          "Terracotta & glazed — muted earth tones and patterns for backgrounds",
+          "Map colors — used for map art so the in-game map renders accurately",
+        ],
+      },
+      {
+        h2: "Build with any palette",
+        body: [
+          "In our generator you can toggle whole block categories on or off and even auto-pick the palette that best matches your image, then export the result. Pick concrete for posters and characters, or map colors for map art.",
+        ],
+      },
+    ],
+    related: ["/pixel-art-generator/", "minecraft-concrete-colors", "/map-art/"],
+  },
+  {
+    slug: "minecraft-height-limit",
+    title: "Minecraft Height Limit & Build Limit Explained",
+    description:
+      "What is the Minecraft height limit? The current build limit, world height, the lowest build level, and how it differs across versions like 1.21.",
+    h1: "Minecraft Height Limit & Build Limit",
+    date: "2026-06-29",
+    excerpt: "The current world height, build limit, and lowest build level — and what changed in recent versions.",
+    keyword: "minecraft height limit",
+    sections: [
+      {
+        h2: "The current height limit",
+        body: [
+          "In modern Minecraft (1.18 and later, including 1.21), the world is 384 blocks tall. You can build from Y = -64 at the bottom up to Y = 319 at the top, for a total height of 384 blocks.",
+        ],
+      },
+      {
+        h2: "How it changed",
+        body: [
+          "Before the 1.18 Caves & Cliffs update, the world ran from Y = 0 to Y = 255 (256 blocks). The update lowered the floor to -64 and raised the ceiling to 319, expanding both caves below and building space above.",
+        ],
+        list: ["Build limit (top): Y = 319", "Lowest build level: Y = -64", "Total world height: 384 blocks"],
+      },
+      {
+        h2: "Why it matters for pixel art",
+        body: [
+          "A vertical pixel-art mural is limited by the build height. With 384 blocks of vertical room you can build very tall murals, but most pixel art fits comfortably — a 128-tall design uses only a third of the available height.",
+        ],
+      },
+    ],
+    related: ["/pixel-art-generator/", "/image-to-schematic/", "minecraft-block-palettes"],
+  },
+  {
     slug: "how-to-make-pixel-art-in-minecraft",
     title: "How to Make Pixel Art in Minecraft — The Complete Guide",
     description:

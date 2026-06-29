@@ -12,6 +12,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const staticPaths = [
     "/",
+    "/image-to-pixel-art/",
+    "/pixel-art-converter/",
+    "/png-to-pixel-art/",
+    "/convert-image-to-pixel-art/",
+    "/image-to-schematic/",
+    "/litematica-to-schematic/",
     "/image-converter/",
     "/pixel-art-generator/",
     "/block-list/",
